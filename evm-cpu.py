@@ -733,7 +733,13 @@ class EVMProcessor(idaapi.processor_t):
         #print "emulating", insn.get_canon_mnem(), hex(feature)
 
         mnemonic = insn.get_canon_mnem()
-        if mnemonic == "CALLI":
+        if mnemonic == "PUSH4":
+            hash_str = '0x%08x' %(self.get_operand(insn[0]))
+            function_prototype = known_hashes.knownHashes.get(hash_str, '').encode('ascii','ignore')
+            if function_prototype:
+                ida_bytes.set_cmt(insn.ea, function_prototype, True)
+            
+        elif mnemonic == "CALLI":
             # operand 0 is the address
             # operand 1 is the function hash
             add_cref(insn.ea, insn.ea + insn.size, fl_JN) # false branch is following instruction
@@ -742,13 +748,13 @@ class EVMProcessor(idaapi.processor_t):
             ida_bytes.set_cmt(insn.ea, "JUMPI", True)
 
             hash_str = '0x%08x' %(insn[1].value)
-            function_prototype = known_hashes.knownHashes.get(hash_str, '')
+            function_prototype = known_hashes.knownHashes.get(hash_str, '').encode('ascii', 'ignore')
             label = '%s (%s)' %(function_prototype, hash_str)
             if not ida_lines.get_extra_cmt(addr, ida_lines.E_PREV + 0): # don't dup
                 ida_lines.add_extra_cmt(addr, True, label)
                 if function_prototype == '':
                     function_prototype = 'func_%s' %(hash_str)
-                set_name(addr, function_prototype, SN_NOCHECK)
+                set_name(addr, function_prototype, SN_NOCHECK|SN_NOWARN|SN_FORCE)
            
         elif mnemonic == "JUMPI":
             # add ref to next instruction for false branch
