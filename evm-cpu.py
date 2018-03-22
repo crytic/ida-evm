@@ -473,7 +473,7 @@ class EVMAsm(object):
         '''
         try:
             _reverse_table = EVMAsm._get_reverse_table()
-            assembler = assembler.strip().split(' ')
+            assembler = assembler.strip().split()
             opcode, name, operand_size, pops, pushes, gas, description = _reverse_table[assembler[0].upper()]
             if operand_size > 0:
                 assert len(assembler) == 2
@@ -681,7 +681,7 @@ class EVMAsm(object):
 
 class EVMProcessor(idaapi.processor_t):
     id = 0x8000 + 0x6576
-    flag = PR_ADJSEGS | PRN_HEX
+    flag = PR_ADJSEGS | PRN_HEX | PR_ASSEMBLE
     cnbits = 8
     dnbits = 8
     psnames = ["evm"]
@@ -904,6 +904,14 @@ class EVMProcessor(idaapi.processor_t):
         return insn.size 
 
 
+    def notify_assemble(self, ea, cs, ip, use32, line):
+        try:
+            asm = EVMAsm.assemble_one(line, 0)
+        except Exception as e:
+            print "Error trying to assemble '%s': %s" %(line, e)
+            return None
+
+        return asm.bytes
 
     def __init__(self):
         processor_t.__init__(self)
