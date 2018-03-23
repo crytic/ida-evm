@@ -728,14 +728,19 @@ class EVMProcessor(idaapi.processor_t):
     def trace_sp(self, insn):
         pass
 
+    @staticmethod
+    def get_prototype(num):
+        hash_str = '0x%x' %(num, )
+        function_prototype = known_hashes.knownHashes.get(hash_str, '').encode('ascii','ignore')
+        return function_prototype
+
     def notify_emu(self, insn):
         feature = insn.get_canon_feature()
         #print "emulating", insn.get_canon_mnem(), hex(feature)
 
         mnemonic = insn.get_canon_mnem()
         if mnemonic == "PUSH4":
-            hash_str = '0x%08x' %(self.get_operand(insn[0]))
-            function_prototype = known_hashes.knownHashes.get(hash_str, '').encode('ascii','ignore')
+            function_prototype = self.get_prototype(self.get_operand(insn[0]))
             if function_prototype:
                 ida_bytes.set_cmt(insn.ea, function_prototype, True)
             
@@ -747,13 +752,13 @@ class EVMProcessor(idaapi.processor_t):
             add_cref(insn.ea, addr, fl_CN) # true branch is stored in operand index 0
             ida_bytes.set_cmt(insn.ea, "JUMPI", True)
 
-            hash_str = '0x%08x' %(insn[1].value)
-            function_prototype = known_hashes.knownHashes.get(hash_str, '').encode('ascii', 'ignore')
-            label = '%s (%s)' %(function_prototype, hash_str)
+            jump_hash = insn[1].value
+            function_prototype = self.get_prototype(jump_hash)
+            label = '%s (0x%x)' %(function_prototype, jump_hash)
             if not ida_lines.get_extra_cmt(addr, ida_lines.E_PREV + 0): # don't dup
                 ida_lines.add_extra_cmt(addr, True, label)
                 if function_prototype == '':
-                    function_prototype = 'func_%s' %(hash_str)
+                    function_prototype = 'func_0x%x' % (jump_hash, )
                 set_name(addr, function_prototype, SN_NOCHECK|SN_NOWARN|SN_FORCE)
            
         elif mnemonic == "JUMPI":
@@ -778,8 +783,9 @@ class EVMProcessor(idaapi.processor_t):
                     # TODO: adjust function boundary to include all code
                     #func = get_func(insn.ea)
                     #if func:
-                    #    print "appending new tail"
-                    #    append_func_tail(func, jump_addr, BADADDR)
+                    #    #print "appending new tail"
+                    #    #append_func_tail(func, jump_addr, BADADDR)
+                    #    #reanalyze_function(func)
 
         flows = (feature & CF_STOP) == 0
         if flows:
@@ -805,9 +811,12 @@ class EVMProcessor(idaapi.processor_t):
         """
         #print hex(func_ea), hex(max_func_end_ea), code
         #print print_insn_mnem(max_func_end_ea-1)
+        #append_func_tail(func, jump_addr, BADADDR)
+        #reanalyze_function(func)
         return FIND_FUNC_OK
 
-    def get_operand(self, op):
+    @staticmethod
+    def get_operand(op):
         operand = 0
         if op.type == o_idpspec0:
             # re-read all of the bytes from instruction
