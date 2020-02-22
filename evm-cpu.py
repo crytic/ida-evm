@@ -323,6 +323,9 @@ class EVMAsm(object):
                 0x18: ('XOR', 0, 2, 1, 3, 'Bitwise XOR operation.'),
                 0x19: ('NOT', 0, 1, 1, 3, 'Bitwise NOT operation.'),
                 0x1a: ('BYTE', 0, 2, 1, 3, 'Retrieve single byte from word.'),
+                0x1b: ('SHL', 0, 2, 1, 3, 'Shift left.'), # EIP145
+                0x1c: ('SHR', 0, 2, 1, 3, 'Logical shift right.'), # EIP145
+                0x1d: ('SAR', 0, 2, 1, 3, 'Arithmetic shift right.'), # EIP145
                 0x20: ('SHA3', 0, 2, 1, 30, 'Compute Keccak-256 hash.'),
                 0x30: ('ADDRESS', 0, 0, 1, 2, 'Get address of currently executing account     .'),
                 0x31: ('BALANCE', 0, 1, 1, 20, 'Get balance of the given account.'),
@@ -337,6 +340,8 @@ class EVMAsm(object):
                 0x3a: ('GASPRICE', 0, 0, 1, 2, 'Get price of gas in current environment.'),
                 0x3b: ('EXTCODESIZE', 0, 1, 1, 20, "Get size of an account's code."),
                 0x3c: ('EXTCODECOPY', 0, 4, 0, 20, "Copy an account's code to memory."),
+                0x3d: ('RETURNDATASIZE', 0, 0, 1, 2, "Pushes the size of the return data buffer onto the stack."), # EIP211
+                0x3e: ('RETURNDATACOPY', 0, 3, 0, 3, "Copies data from the return data buffer."), # EIP211, gas is actually 3 + 3 * ceil(amount / 32)
                 0x40: ('BLOCKHASH', 0, 1, 1, 20, 'Get the hash of one of the 256 most recent complete blocks.'),
                 0x41: ('COINBASE', 0, 0, 1, 2, "Get the block's beneficiary address."),
                 0x42: ('TIMESTAMP', 0, 0, 1, 2, "Get the block's timestamp."),
