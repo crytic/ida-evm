@@ -861,7 +861,7 @@ class EVMProcessor(idaapi.processor_t):
         try:
             instruction = EVMAsm.disassemble_one(bytecode)
         except Exception as e:
-            print e
+            print(e)
             return
 
         insn.size = instruction.size
@@ -887,7 +887,7 @@ class EVMProcessor(idaapi.processor_t):
             for i in prev_insns:
                 #print i.get_canon_mnem(),
                 if i.ea == ida_idaapi.BADADDR:
-                    print 'ERROR'
+                    print('ERROR')
 
             if (prev_insns[0].get_canon_mnem().startswith("PUSH2") and
                     prev_insns[1].get_canon_mnem().startswith("EQ") and
@@ -923,7 +923,7 @@ class EVMProcessor(idaapi.processor_t):
         try:
             asm = EVMAsm.assemble_one(line, 0)
         except Exception as e:
-            print "Error trying to assemble '%s': %s" %(line, e)
+            print("Error trying to assemble '%s': %s" %(line, e))
             return None
 
         return asm.bytes
