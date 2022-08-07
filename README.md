@@ -13,7 +13,7 @@ IDA Pro 7.0 or newer is required to use IDA-EVM.
 * Restart IDA
 
 # What's New in ida-evm-enhanced
-Forked from crytic/ida-evm, enhanced jump dest address analysis.
-Previously, jump dest addr can only be resolved when the direct previous instruction is PUSH, but not working on other instructions.
-Now ida-evm-enhanced can resolve & display the jump dest addr under all instructions.
-The only thing left is, it doesn't follow all branches when there's multiple upperstream code branches. As a workaround, it displays all the upperstream branches in the comments of the jump instruction.
+- Forked from crytic/ida-evm, enhanced jump dest address analysis.
+- Previously, jump dest addr can only be resolved when the direct previous instruction is PUSH, but not working on other instructions.
+- Now ida-evm-enhanced can resolve & display the jump dest addr under all instructions.
+- The only thing left is, it doesn't follow all branches when there's multiple upperstream code branches. As a workaround, it displays all the upperstream branches in the comments of the jump instruction.
