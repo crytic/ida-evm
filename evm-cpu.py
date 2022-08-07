@@ -759,16 +759,16 @@ class EVMProcessor(idaapi.processor_t):
         # elif insn.get_canon_mnem().startswith("PUSH"):
         #     jump_addr = self.get_operand(insn[0])
         else:
-            print "__trace_stop else"
+            # print "__trace_stop else"
             jump_addr = None
-        print "__trace_stop end", insn.get_canon_mnem(), hex(self.get_operand(insn[0])), 'ret_pos =',ret_pos
+        # print "__trace_stop end", insn.get_canon_mnem(), hex(self.get_operand(insn[0])), 'ret_pos =',ret_pos
         return jump_addr, ret_pos
 
     def add_jump(self, from_ea, to_ea, jp_type):
         add_cref(from_ea, to_ea, jp_type)
         if to_ea not in self.dst2src:
             self.dst2src[to_ea] = []
-        print 'add_jump', hex(from_ea), hex(to_ea)
+        # print 'add_jump', hex(from_ea), hex(to_ea)
         if from_ea not in self.dst2src[to_ea]:
             self.dst2src[to_ea].append(from_ea)
     
@@ -801,20 +801,20 @@ class EVMProcessor(idaapi.processor_t):
         # prev_insn, fl = idautils.DecodePrecedingInstruction(insn.ea)
         prev_insn_branchs = self.get_all_preceding_insn_on_controlflow(insn)
         if len(prev_insn_branchs) > 1:
-            print 'multiple prev_insn_branchs:', [hex(ins.ea) for ins in prev_insn_branchs]
+            # print 'multiple prev_insn_branchs:', [hex(ins.ea) for ins in prev_insn_branchs]
             # prev_insn = None
             # note: here the return[0] is not the jump dst addr, but the upperstream branchs
             return [_i.ea for _i in prev_insn_branchs], [0]*len(prev_insn_branchs)
         elif len(prev_insn_branchs) == 1:
             prev_insn = prev_insn_branchs[0]
-            print 'in trace_jumpdest, cur insn:', hex(insn.ea), 'pre insn:', hex(prev_insn.ea) if prev_insn else None
+            # print 'in trace_jumpdest, cur insn:', hex(insn.ea), 'pre insn:', hex(prev_insn.ea) if prev_insn else None
         
             _tbl = EVMAsm._get_reverse_table()
             opname = prev_insn.get_canon_mnem()
             info = _tbl[opname]
             pops, pushes = info[3], info[4]
 
-            print "trace_jumpdest", hex(prev_insn.ea), prev_insn.get_canon_mnem(), pops, pushes, current_stack_offset
+            # print "trace_jumpdest", hex(prev_insn.ea), prev_insn.get_canon_mnem(), pops, pushes, current_stack_offset
             update_stack_offset = current_stack_offset - pops + pushes
             assert current_stack_offset <=0, "current_stack_offset > 0, impossible, should be addressed in previous trace_jumpdest call"
             if pushes > -current_stack_offset:
@@ -850,7 +850,7 @@ class EVMProcessor(idaapi.processor_t):
         return function_prototype
 
     def notify_emu(self, insn):
-        print "notify_emu", insn.ea
+        # print "notify_emu", insn.ea
         feature = insn.get_canon_feature()
         #print "emulating", insn.get_canon_mnem(), hex(feature)
 
@@ -889,26 +889,27 @@ class EVMProcessor(idaapi.processor_t):
             #         add_cref(insn.ea, jump_addr, fl_JN)
             jump_addr_list, ret_pos_list = self.trace_jumpdest(insn, 0)
             if jump_addr_list is not None and len(jump_addr_list)>0:
-                print 'jump_addr_list', jump_addr_list
-                print hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
+                # print 'jump_addr_list', jump_addr_list
+                # print hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
                 # print '+add_cref', hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
                 #TODO: use ret_pos
                 self.add_jumps(insn.ea, jump_addr_list, ret_pos_list, [fl_JN]*len(jump_addr_list))
             else:
-                print '-not add cref'
+                # print '-not add cref'
                 pass
 
         elif mnemonic == "JUMP":
             jump_addr_list, ret_pos_list = self.trace_jumpdest(insn, 0)
              # = rst[0], rst[1]
             if jump_addr_list is not None and len(jump_addr_list)>0:
-                print 'jump_addr_list', jump_addr_list
-                print hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
+                # print 'jump_addr_list', jump_addr_list
+                # print hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
                 # print '+add_cref', hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
                 #TODO: use ret_pos
                 self.add_jumps(insn.ea, jump_addr_list, ret_pos_list, [fl_JN]*len(jump_addr_list))
             else:
-                print '-not add cref'
+                # print '-not add cref'
+                pass
 
             # prev_insn = idautils.DecodePreviousInstruction(insn.ea)
             # if prev_insn:
@@ -1127,11 +1128,11 @@ class EVMProcessor(idaapi.processor_t):
     #     else:
     #         print "----notify_auto_queue_empty test"
 
-    def notify_coagulate(self, start_ea):
-        print "notify_coagulate", start_ea
+    # def notify_coagulate(self, start_ea):
+    #     print "notify_coagulate", start_ea
 
     def notify_out_header(self, outctx):
-        print "notify_out_header"
+        # print "notify_out_header"
         idc.auto_wait()
         self.rebuild_cf()
 
