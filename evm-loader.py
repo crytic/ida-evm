@@ -21,14 +21,14 @@ def load_file(li, neflags, format):
         return 0
 
     if buf[0:2] == '0x':
-        print "Detected hex"
+        print("Detected hex")
         new_buf = buf[2:].strip().rstrip()
         buf_set = set()
         for c in new_buf:
             buf_set.update(c)
         hex_set = set(list('0123456789abcdef'))
         if buf_set <= hex_set: # subset
-            print "Replacing original buffer with hex decoded version"
+            print("Replacing original buffer with hex decoded version")
             buf = new_buf.decode('hex')
 
     # Load all shellcode into different segments
@@ -52,7 +52,7 @@ def load_file(li, neflags, format):
     # check for swarm hash and make it data instead of code
     swarm_hash_address = buf.find('ebzzr0')
     if swarm_hash_address != -1:
-        print "Swarm hash detected, making it data"
+        print("Swarm hash detected, making it data")
         for i in range(swarm_hash_address-1, swarm_hash_address+42):
             MakeByte(i)
         ida_bytes.set_cmt(swarm_hash_address-1, "swarm hash", True)
