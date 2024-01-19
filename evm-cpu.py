@@ -3,9 +3,7 @@ import idaapi
 from idc import *
 from idaapi import *
 import idautils
-# from idadex import ea_t
 
-# from decorators import memoized
 import known_hashes
 
 '''
@@ -453,23 +451,7 @@ class EVMAsm(object):
                 0xff: ('SELFDESTRUCT', 0, 1, 0, 5000, 'Halt execution and register account for later deletion.')
             }
 
-    # @staticmethod
-    # # @memoized
-    # def _get_reverse_table():
-    #     ''' Build an internal table used in the assembler '''
-    #     reverse_table = {}
-    #     for (opcode, (name, immediate_operand_size, pops, pushes, gas, description)) in EVMAsm._table.items():
-    #         mnemonic = name
-    #         if name == 'PUSH':
-    #             mnemonic = '%s%d'%(name, (opcode&0x1f) + 1)
-    #         elif name in ('SWAP', 'LOG', 'DUP'):
-    #             mnemonic = '%s%d'%(name, (opcode&0xf) + 1)
-
-    #         reverse_table[mnemonic] = opcode, name, immediate_operand_size, pops, pushes, gas, description
-    #     return reverse_table
-
     @staticmethod
-    # @memoized
     def _get_reverse_table():
         ''' Build an internal table used in the assembler '''
         if len(EVMAsm.reverse_table) == 0:
@@ -832,16 +814,6 @@ class EVMProcessor(idaapi.processor_t):
 
     def trace_sp(self, insn):
         pass
-        # pfn = get_func(insn.ea)
-        # if not pfn:
-        #     return
-        # mnemonic = insn.get_canon_mnem()
-        # if mnemonic == "PUSH2":
-        #     spofs = 2
-        #     self.add_auto_stkpnt(pfn, insn, -spofs)
-        # elif mnemonic == "MSTORE":
-        #     spofs = 2
-        #     self.add_auto_stkpnt(pfn, insn, -spofs)
 
     @staticmethod
     def get_prototype(num):
@@ -850,7 +822,6 @@ class EVMProcessor(idaapi.processor_t):
         return function_prototype
 
     def notify_emu(self, insn):
-        # print "notify_emu", insn.ea
         feature = insn.get_canon_feature()
         #print "emulating", insn.get_canon_mnem(), hex(feature)
 
@@ -889,26 +860,17 @@ class EVMProcessor(idaapi.processor_t):
             #         add_cref(insn.ea, jump_addr, fl_JN)
             jump_addr_list, ret_pos_list = self.trace_jumpdest(insn, 0)
             if jump_addr_list is not None and len(jump_addr_list)>0:
-                # print 'jump_addr_list', jump_addr_list
-                # print hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
-                # print '+add_cref', hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
                 #TODO: use ret_pos
                 self.add_jumps(insn.ea, jump_addr_list, ret_pos_list, [fl_JN]*len(jump_addr_list))
             else:
-                # print '-not add cref'
                 pass
 
         elif mnemonic == "JUMP":
             jump_addr_list, ret_pos_list = self.trace_jumpdest(insn, 0)
-             # = rst[0], rst[1]
             if jump_addr_list is not None and len(jump_addr_list)>0:
-                # print 'jump_addr_list', jump_addr_list
-                # print hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
-                # print '+add_cref', hex(insn.ea), [hex(ea) for ea in jump_addr_list], 'ret_pos:', ret_pos_list
                 #TODO: use ret_pos
                 self.add_jumps(insn.ea, jump_addr_list, ret_pos_list, [fl_JN]*len(jump_addr_list))
             else:
-                # print '-not add cref'
                 pass
 
             # prev_insn = idautils.DecodePreviousInstruction(insn.ea)
@@ -943,7 +905,6 @@ class EVMProcessor(idaapi.processor_t):
         return True
 
     def notify_func_bounds(self, code, func_ea, max_func_end_ea):
-        # print "notify_func_bounds", func_ea
         """
         find_func_bounds() finished its work
         The module may fine tune the function bounds
@@ -974,7 +935,6 @@ class EVMProcessor(idaapi.processor_t):
         return operand
 
     def notify_out_operand(self, ctx, op):
-        # print "notify_out_operand", op
         if op.type == o_idpspec0:
             operand = self.get_operand(op)
             ctx.out_line("0x%x" %(operand, ))
@@ -1000,7 +960,6 @@ class EVMProcessor(idaapi.processor_t):
 
 
     def notify_ana(self, insn):
-        # print "notify_ana", insn.ea
         ea = insn.ea
         bytes_left = chunk_start(ea) + chunk_size(ea) - ea
         bytecode = ida_bytes.get_bytes(insn.ea, bytes_left) # get remaining bytes in chunk
@@ -1066,7 +1025,6 @@ class EVMProcessor(idaapi.processor_t):
 
 
     def notify_assemble(self, ea, cs, ip, use32, line):
-        # print "notify_assemble", ea
         try:
             asm = EVMAsm.assemble_one(line, 0)
         except Exception as e:
@@ -1116,23 +1074,8 @@ class EVMProcessor(idaapi.processor_t):
         self.instruc_end = len(self.instruc)
         self.has_rebuild_cf = False
         self.dst2src = {}
-    # def notify_init(self, func):
-    #     print "notify_init test"
-
-    # def notify_auto_queue_empty(self, func):
-    #     print "notify_auto_queue_empty test"
-    #     rst = idc.auto_wait()
-    #     print 'wait ret', rst 
-    #     if rst:
-    #         print "++++notify_auto_queue_empty test"
-    #     else:
-    #         print "----notify_auto_queue_empty test"
-
-    # def notify_coagulate(self, start_ea):
-    #     print "notify_coagulate", start_ea
-
+    
     def notify_out_header(self, outctx):
-        # print "notify_out_header"
         idc.auto_wait()
         self.rebuild_cf()
 
@@ -1141,17 +1084,9 @@ class EVMProcessor(idaapi.processor_t):
             return
         self.has_rebuild_cf = True
         for func_ea in idautils.Functions():
-            #0x8d715d9d
             print('rebuild_cf func_ea', func_ea,get_func(func_ea),idc.get_func_name(func_ea))
             reanalyze_function(get_func(func_ea))
 
 
 def PROCESSOR_ENTRY():
     return EVMProcessor()
-
-
-
-# print "rebuild_cf before wait"
-# idc.auto_wait()
-# print "rebuild_cf after wait"
-# rebuild_cf()
